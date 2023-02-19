@@ -179,6 +179,7 @@ DBImpl::~DBImpl() {
 }
 
 Status DBImpl::NewDB() {
+  // @curoky: effect: create a manifest file and a current file.
   VersionEdit new_db;
   new_db.SetComparatorName(user_comparator()->Name());
   new_db.SetLogNumber(0);
@@ -1208,7 +1209,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
   while (!w.done && &w != writers_.front()) {
     w.cv.Wait();
   }
-  if (w.done) {
+  if (w.done) { // @curoky: when and why w.done
     return w.status;
   }
 
@@ -1251,6 +1252,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
     versions_->SetLastSequence(last_sequence);
   }
 
+  // @curoky: steal writers
   while (true) {
     Writer* ready = writers_.front();
     writers_.pop_front();
@@ -1503,6 +1505,7 @@ Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   // Recover handles create_if_missing, error_if_exists
   bool save_manifest = false;
   Status s = impl->Recover(&edit, &save_manifest);
+  // @curoky: when impl->mem_ is nullptr or nor
   if (s.ok() && impl->mem_ == nullptr) {
     // Create new log and a corresponding memtable.
     uint64_t new_log_number = impl->versions_->NewFileNumber();

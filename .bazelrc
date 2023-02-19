@@ -2,3 +2,4 @@ build --compilation_mode=dbg
 
 build --experimental_enable_bzlmod
 build --registry=https://raw.githubusercontent.com/curoky/bazel-central-registry/main/
+build --cxxopt="-std=c++23"
